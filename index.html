@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>VR Logisim Evolution — Desain Digital dan Logika</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+    <script src="data.js"></script>
+    <script src="audio.js"></script>
+    <script src="sistem.js"></script>
+    <script src="komponen-pemain.js"></script>
+    <script src="komponen-ui.js"></script>
+    <script src="ruang.js"></script>
+  </head>
+  <body>
+    <div id="tirai-layar" class="aktif"></div>
+    <div id="notif" role="status" aria-live="polite"></div>
+
+    <div id="bidik" aria-hidden="true">
+      <div class="titik"></div>
+    </div>
+
+    <div id="prompt-aksi" aria-hidden="true">
+      <span id="teks-aksi">Klik untuk berinteraksi</span>
+    </div>
+
+    <div id="kartu-ruang" aria-hidden="true">
+      <div id="kartu-sub">ZONA PRAKTIKUM</div>
+      <h2 id="kartu-judul">LOBI UTAMA</h2>
+    </div>
+
+    <!-- HUD -->
+    <header id="hud" class="sembunyi">
+      <div class="hud-kiri">
+        <div class="lencana-progres">
+          <span class="ikon-kristal">◆</span>
+          <span>Kristal: <strong id="hud-kristal">0/3</strong></span>
+        </div>
+        <div class="lencana-ruang" id="hud-ruang">Lobi Utama</div>
+      </div>
+
+      <div class="hud-tengah">
+        <span class="indikator-logika"><i class="dot-on"></i> HIGH (1)</span>
+        <span class="indikator-logika"><i class="dot-off"></i> LOW (0)</span>
+      </div>
+
+      <div class="hud-kanan">
+        <button id="btn-tablet" class="tombol-hud" title="Buka Log Praktikum [T]">Log Praktikum [T]</button>
+        <button id="btn-jeda" class="tombol-hud" title="Menu Control [C / Esc]">Control [C]</button>
+      </div>
+    </header>
+
+    <!-- Kontrol sentuh (Mobile/Tablet) -->
+    <div id="kontrol-sentuh" class="sembunyi">
+      <div id="zona-stik"><div id="knop-stik"></div></div>
+      <div id="petunjuk-geser">Geser layar untuk menoleh · Ketuk objek untuk interaksi</div>
+    </div>
+
+    <!-- MENU AWAL FULLSCREEN DENGAN LATAR KAMERA BERPUTAR 360° -->
+    <section id="layar-menu" class="lapisan-ui menu-utama-layar">
+      <div class="menu-konten">
+        <!-- HEADER: 3 LOGO INSTITUSI & PROGRAM SATRIA 2026 -->
+        <header class="menu-header">
+          <div class="deret-logo">
+            <div class="kotak-logo" title="Kemdiktisaintek">
+              <img src="logo-kemdiktisaintek (1).png" alt="Kemdiktisaintek" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+              <span class="logo-fallback" style="display:none">RI</span>
+            </div>
+            <div class="kotak-logo" title="Program Saintek Satria">
+              <img src="logo-diktisaintek-berdampak.png" alt="Saintek" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+              <span class="logo-fallback" style="display:none">ST</span>
+            </div>
+            <div class="kotak-logo" title="Universitas Negeri Gorontalo">
+              <img src="logo-ung.png" alt="UNG" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+              <span class="logo-fallback" style="display:none">UNG</span>
+            </div>
+          </div>
+          <div class="teks-program">
+            <strong>PROGRAM SAINTEK RISET PEMBELAJARAN TRANSFORMATIF DI PERGURUAN TINGGI (SATRIA) TAHUN 2026</strong>
+            <span>Direktorat Strategi dan Sistem Pembelajaran Transformatif</span>
+            <span>Direktorat Jenderal Sains dan Teknologi</span>
+          </div>
+        </header>
+
+        <!-- TENGAH: JUDUL UTAMA & DAFTAR MENU VERTIKAL -->
+        <div class="menu-tengah">
+          <h1 class="judul-utama-vr">VR-LOGISIM</h1>
+          <p class="subjudul-utama-vr">Virtual Reality Logic Gate Transformative Learning</p>
+
+          <div class="tagline-aksen">
+            LABORATORIUM VIRTUAL GERBANG LOGIKA DIGITAL
+          </div>
+
+          <p class="deskripsi-utama-vr">
+            Jelajahi simbol gerbang logika dasar, uji saklar rangkaian interaktif, dan buktikan tabel kebenaran di Arena Uji.
+          </p>
+
+          <nav class="daftar-menu-utama" aria-label="Menu Utama">
+            <button id="btn-mulai" class="item-menu-utama aktif" data-idx="0">
+              <span class="judul-item">Mulai Pembelajaran</span>
+              <span class="sub-item">Masuk ke lobi laboratorium</span>
+            </button>
+
+            <button id="btn-atur-awal" class="item-menu-utama" data-idx="1">
+              <span class="judul-item">Pengaturan</span>
+              <span class="sub-item">Grafis, suara, dan kontrol</span>
+            </button>
+
+            <button id="btn-panduan-awal" class="item-menu-utama" data-idx="2">
+              <span class="judul-item">Panduan</span>
+              <span class="sub-item">Tujuan belajar dan cara bermain</span>
+            </button>
+          </nav>
+
+          <div class="petunjuk-tombol-menu">
+            <span class="kunci-kbd">&uarr;</span>
+            <span class="kunci-kbd">&darr;</span>
+            <span class="label-kbd">pilih</span>
+            <span class="kunci-kbd">Enter</span>
+            <span class="label-kbd">buka</span>
+            <span class="kunci-kbd">F11</span>
+            <span class="label-kbd">/</span>
+            <span class="kunci-kbd">Fn+F11</span>
+            <span class="label-kbd">layar penuh</span>
+          </div>
+
+        <!-- FOOTER: INDIKATOR PROGRES ZONA (KIRI) & IDENTITAS PENYUSUN (KANAN) -->
+        <footer class="menu-footer">
+          <div class="daftar-progres-zona">
+            <div class="kartu-zona">
+              <span class="zona-tag" style="color:#38bdf8">Zona 1</span>
+              <strong class="zona-nama">Galeri Materi</strong>
+              <span id="menu-prog-materi" class="zona-stat">0 dari 7 gerbang</span>
+            </div>
+            <div class="kartu-zona">
+              <span class="zona-tag" style="color:#f59e0b">Zona 2</span>
+              <strong class="zona-nama">Lab Saklar</strong>
+              <span id="menu-prog-sim" class="zona-stat">0 dari 4 tabel</span>
+            </div>
+            <div class="kartu-zona">
+              <span class="zona-tag" style="color:#2ecc71">Zona 3</span>
+              <strong class="zona-nama">Arena Uji</strong>
+              <span id="menu-prog-kuis" class="zona-stat">8 soal</span>
+            </div>
+          </div>
+
+          <div class="identitas-kanan-bawah">
+            <span class="label-penyusun">PENYUSUN</span>
+            <strong class="nama-penyusun">Ahmad Ardani Latodjo (522424009)</strong>
+            <span>Program Studi Teknik Komputer</span>
+            <span>Fakultas Teknik</span>
+            <span>Universitas Negeri Gorontalo</span>
+            <span>2026</span>
+          </div>
+        </footer>
+      </div>
+    </section>
+
+    <!-- PANEL INSPEKSI MATERI & LOGISIM -->
+    <aside id="panel-inspeksi" class="lapisan-ui sembunyi" aria-modal="true">
+      <div class="kartu-inspeksi">
+        <div class="inspeksi-header">
+          <div>
+            <span id="insp-kategori" class="tag-logisim">LOGISIM EVOLUTION: GATES</span>
+            <h2 id="insp-judul">GERBANG AND</h2>
+          </div>
+          <button id="btn-tutup-insp" class="tombol-tutup" aria-label="Tutup">&times;</button>
+        </div>
+
+        <div class="inspeksi-isi">
+          <div class="kotak-boolean">
+            <span>Ekspresi Boolean</span>
+            <code id="insp-boolean">Y = A · B</code>
+          </div>
+          <p id="insp-deskripsi">Output bernilai 1 hanya jika seluruh input bernilai 1.</p>
+          <div class="kotak-logisim">
+            <strong>Padanan di Logisim Evolution:</strong>
+            <p id="insp-logisim">Wiring → Pin (Input/Output) &amp; Gates → AND Gate</p>
+          </div>
+        </div>
+
+        <div class="inspeksi-kaki">
+          <button id="btn-narasi" class="tombol-sekunder">🔊 Bacakan Materi</button>
+          <button id="btn-selesai-insp" class="tombol-primer">Paham &amp; Lanjut</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MENU JEDA -->
+    <section id="layar-jeda" class="lapisan-ui sembunyi">
+      <div class="kartu-modal">
+        <h2>PRAKTIKUM DIJEDA</h2>
+        <p class="sub-modal">Progres kristal tersimpan otomatis di peramban.</p>
+
+        <div class="daftar-misi-jeda" id="daftar-misi-jeda"></div>
+
+        <div class="grup-tombol">
+          <button id="btn-kembali-main" class="tombol-primer">Lanjutkan Eksplorasi</button>
+          <button id="btn-ke-lobi" class="tombol-sekunder">Ke Lobi Utama</button>
+          <button id="btn-atur-jeda" class="tombol-sekunder">Pengaturan</button>
+          <button id="btn-panduan-jeda" class="tombol-sekunder">Panduan &amp; Kontrol</button>
+          <button id="btn-demo" class="tombol-aksen">Mode Demo (Buka Semua Kristal)</button>
+          <button id="btn-reset" class="tombol-bahaya">Reset Progres</button>
+          <button id="btn-ke-menu-awal" class="tombol-sekunder">Kembali ke Menu Awal</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL PENGATURAN -->
+    <section id="layar-pengaturan" class="lapisan-ui sembunyi">
+      <div class="kartu-modal">
+        <h2>PENGATURAN</h2>
+        <div class="baris-atur">
+          <label for="atur-tema">Tema Lingkungan Lab</label>
+          <select id="atur-tema">
+            <option value="gelap">Gelap (Blueprint Sirkuit)</option>
+            <option value="terang">Terang (Ruang Kelas / Presentasi)</option>
+          </select>
+        </div>
+        <div class="baris-atur">
+          <label for="atur-kualitas">Kualitas Grafis</label>
+          <select id="atur-kualitas">
+            <option value="tinggi">Tinggi (Animasi Penuh)</option>
+            <option value="rendah">Rendah (Hemat Baterai)</option>
+          </select>
+        </div>
+        <div class="baris-atur">
+          <label for="atur-suara">Efek Suara &amp; Narasi</label>
+          <input type="checkbox" id="atur-suara" checked />
+        </div>
+        <div class="baris-atur">
+          <label for="atur-fov">Bidang Pandang (FOV)</label>
+          <input type="range" id="atur-fov" min="65" max="90" step="1" value="80" />
+        </div>
+        <button id="btn-tutup-atur" class="tombol-primer">Simpan &amp; Kembali</button>
+      </div>
+    </section>
+
+    <!-- PANEL PANDUAN -->
+    <section id="layar-panduan" class="lapisan-ui sembunyi">
+      <div class="kartu-modal">
+        <h2>PANDUAN PRAKTIKUM</h2>
+        <ul class="daftar-panduan">
+          <li><strong>Alur Misi:</strong> Kumpulkan 3 Kristal secara berurutan (<em>Galeri Materi</em> → <em>Lab Saklar</em> → <em>Arena Uji</em>) untuk menyalakan reaktor cahaya di Lobi.</li>
+          <li><strong>Bergerak:</strong> Gunakan tombol <strong>W A S D</strong> atau panah (Desktop) / stik kiri (HP).</li>
+          <li><strong>Menoleh &amp; Pintasan:</strong> Klik layar untuk mengunci kursor mouse. Tekan <strong>T</strong> untuk membuka/menutup <em>Log Praktikum</em>, dan tekan <strong>C</strong> atau <strong>Esc</strong> untuk membuka/menutup menu <em>Control</em>.</li>
+          <li><strong>Interaksi Objek:</strong> Arahkan titik bidik ke podium, saklar input (A/B), atau pintu, lalu <strong>Klik Kiri</strong>.</li>
+          <li><strong>Arena Uji (Kuis):</strong> Berjalan dan berdiri di atas lingkaran jawaban (<strong>0</strong> atau <strong>1</strong>) hingga indikator terisi penuh.</li>
+          <li><strong>Layar Penuh:</strong> Tekan <strong>F11</strong> (atau <strong>Fn + F11</strong> pada laptop) untuk pengalaman praktikum layar penuh yang lebih imersif.</li>
+        </ul>
+        <button id="btn-tutup-panduan" class="tombol-primer">Mengerti</button>
+      </div>
+    </section>
+
+    <!-- POPUP VALIDASI KONFIRMASI -->
+    <section id="layar-konfirmasi" class="lapisan-ui sembunyi" role="dialog" aria-modal="true">
+      <div class="kartu-modal kartu-konfirmasi">
+        <h2 id="konf-judul">KONFIRMASI AKSI</h2>
+        <p id="konf-pesan" class="sub-modal">Apakah Anda yakin ingin melanjutkan?</p>
+        <div class="grup-tombol baris-konfirmasi">
+          <button id="btn-konf-batal" class="tombol-sekunder">Batal</button>
+          <button id="btn-konf-ya" class="tombol-primer">Ya, Lanjutkan</button>
+        </div>
+      </div>
+    </section> 
+
+    <!-- SCENE 3D A-FRAME (KAMERA STANDAR DEFAULT A-FRAME) -->
+    <a-scene
+      id="scene-utama"
+      kamera-orbit-menu
+      renderer="antialias: true; colorManagement: true"
+      vr-mode-ui="enabled: true"
+      background="color: #0b111e"
+      lab-logika
+    >
+      <a-assets>
+        <img id="aset-logo-ung" src="logo-ung.png" crossorigin="anonymous" />
+      </a-assets>
+
+      <!-- Pemain menggunakan look-controls & wasd-controls standar A-Frame -->
+      <a-entity id="pemain" position="0 0 3.5" pemain-gerak>
+        <a-camera
+          id="kamera"
+          position="0 1.6 0"
+          look-controls="pointerLockEnabled: true"
+          wasd-controls="enabled: false"
+        >
+          <a-entity
+            id="kursor-tatap"
+            position="0 0 -1"
+            geometry="primitive: ring; radiusInner: 0.011; radiusOuter: 0.019; segmentsTheta: 24"
+            material="color: #2ecc71; shader: flat; opacity: 0.85"
+            cursor="fuse: false"
+            raycaster="objects: .klik-aktif; far: 14; origin: 0 0 1"
+          ></a-entity>
+
+          <a-entity id="tablet-3d" position="-0.36 -0.17 -0.7" rotation="-18 10 0" tablet-praktikum visible="false"></a-entity>
+        </a-camera>
+      </a-entity>
+
+      <a-entity id="lampu-amb" light="type: ambient; color: #dbeafe; intensity: 0.85"></a-entity>
+      <a-entity id="lampu-arah" light="type: directional; color: #ffffff; intensity: 0.45" position="3 8 5"></a-entity>
+
+      <a-entity id="ruang-lobi"></a-entity>
+      <a-entity id="ruang-materi" visible="false"></a-entity>
+      <a-entity id="ruang-simulator" visible="false"></a-entity>
+      <a-entity id="ruang-kuis" visible="false"></a-entity>
+    </a-scene>
+  </body>
+</html>
